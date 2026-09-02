@@ -1,0 +1,618 @@
+<!--
+  ============================================================================
+  BACK TO SCHOOL SALES CHALLENGE — Chalkboard Leaderboard
+  ============================================================================
+  HOW TO UPDATE:  Everything you change lives in the CONTEST object below.
+  - Daily update  -> change `dateLabel`, `todaySpecial`, and each rep's
+                     `salesDay` / `otDay` numbers (and `grade` on Fridays).
+  - Weekly update -> change the `reportCard` block (winners + promotions +
+                     comments) and refresh `salesMTD` / `otMTD` totals.
+  Give the numbers to Claude and it will edit this file for you.
+  ============================================================================
+-->
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Back to School Sales Challenge — Leaderboard</title>
+
+<script>
+/* ========================== EDIT THIS BLOCK ============================== */
+const CONTEST = {
+  month: "September",
+  weekLabel: "Week 1",
+  dateLabel: "Sept 2",
+  lastUpdated: "Sept 2",
+
+  // Today's rotating Daily Engagement. kind sets the color/icon:
+  // 'power' = Power Hour (sales 2x) | 'ot2x' = OT counts 2x for raffle
+  // 'nspd'  = pick tomorrow's theme + $50 | 'raffle' = OT MVP raffle day
+  todaySpecial: {
+    kind: "ot2x",
+    title: "POWER HOUR",
+    note: "OT counts 2× on the Raffle Wheel · $25 for the most sales during Power Hour · time's a surprise! 🤫",
+  },
+
+  // This week's Friday Report Card prize + OT raffle prize (from your grid)
+  fridayPrize: "Most sales points — choice of Massage Chair · TV · Espresso Machine · Computer Monitor, or $200 in paycheck",
+  rafflePrize: "Free PTO Day (off season)",
+
+  // ---- SCORING --------------------------------------------------------------
+  // Everything sold rolls up to ONE points total. Memberships = 1 pt per hour.
+  // Prof Certs score in bands by program size; hours on a band edge ROUND UP
+  // (a 24-hr cert = 15 pts, a 36-hr cert = 20 pts). `min` = the band's first hour.
+  scoring: [
+    { key: "mem4",   label: "4-hour membership",     note: "Membership", pts: 4  },
+    { key: "mem8",   label: "8-hour membership",     note: "Membership", pts: 8  },
+    { key: "cert12", label: "Prof Cert · 12–24 hrs", note: "Prof Cert",  pts: 10, min: 12 },
+    { key: "cert24", label: "Prof Cert · 24–36 hrs", note: "Prof Cert",  pts: 15, min: 24 },
+    { key: "cert36", label: "Prof Cert · 36+ hrs",   note: "Prof Cert",  pts: 20, min: 36 },
+    { key: "gtp14",  label: "GTP · 14–16 hrs",       note: "GTP",        pts: 10 },
+    { key: "wb4",    label: "4-hour membership",     note: "Winback-Outbound Call Sales", pts: 4 },
+    { key: "wb8",    label: "8-hour membership",     note: "Winback-Outbound Call Sales", pts: 8 },
+  ],
+
+  // ---- ROSTER --------------------------------------------------------------
+  // grade: "Freshman" | "Sophomore" | "Junior" | "Senior"
+  // day  = COUNT of each product sold TODAY      (points auto-computed)
+  // mtd  = COUNT of each product sold this MONTH  (points auto-computed)
+  // otDay / otMTD = overtime hours today / month-to-date
+  reps: [
+    { name: "Michael Shunk",          grade: "Freshman", otDay: 0,    otMTD: 0,    dayPts: 64, mtdPts: 64 },
+    { name: "Billy Brown",            grade: "Freshman", otDay: 3.25, otMTD: 3.25, dayPts: 40, mtdPts: 40 },
+    { name: "Marcelo Montes",         grade: "Freshman", otDay: 0,    otMTD: 0,    dayPts: 40, mtdPts: 40 },
+    { name: "Lexann Romonosky",       grade: "Freshman", otDay: 0,    otMTD: 0,    dayPts: 40, mtdPts: 40 },
+    { name: "Jaime Axthelm",          grade: "Freshman", otDay: 0,    otMTD: 0,    dayPts: 32, mtdPts: 32 },
+    { name: "Jensen Ricke",           grade: "Freshman", otDay: 0,    otMTD: 0,    dayPts: 32, mtdPts: 32 },
+    { name: "Eliza Olson",            grade: "Freshman", otDay: 0,    otMTD: 0,    dayPts: 24, mtdPts: 24 },
+    { name: "Lindsey Yong",           grade: "Freshman", otDay: 0,    otMTD: 0,    dayPts: 24, mtdPts: 24 },
+    { name: "Maria Jacovo",           grade: "Freshman", otDay: 0.9,  otMTD: 0.9,  dayPts: 24, mtdPts: 24 },
+    { name: "Christina Yegge",        grade: "Freshman", otDay: 0,    otMTD: 0,    dayPts: 20, mtdPts: 20 },
+    { name: "Elizabeth Antohi",       grade: "Freshman", otDay: 0,    otMTD: 0,    dayPts: 16, mtdPts: 16 },
+    { name: "Terry Miller",           grade: "Freshman", otDay: 0,    otMTD: 0,    dayPts: 16, mtdPts: 16 },
+    { name: "Tanner Smith",           grade: "Freshman", otDay: 0,    otMTD: 0,    dayPts: 16, mtdPts: 16 },
+    { name: "Raven Tolbert",          grade: "Freshman", otDay: 0,    otMTD: 0,    dayPts: 16, mtdPts: 16 },
+    { name: "Jordan Sturdivant",      grade: "Freshman", otDay: 0,    otMTD: 0,    dayPts: 16, mtdPts: 16 },
+    { name: "Mark Crane",             grade: "Freshman", otDay: 0,    otMTD: 0,    dayPts: 16, mtdPts: 16 },
+    { name: "Molly Russell",          grade: "Freshman", otDay: 1,    otMTD: 1,    dayPts: 16, mtdPts: 16 },
+    { name: "Kay Onyekwere",          grade: "Freshman", otDay: 1,    otMTD: 1,    dayPts: 16, mtdPts: 16 },
+    { name: "Kristine Treijs",        grade: "Freshman", otDay: 0,    otMTD: 0,    dayPts: 16, mtdPts: 16 },
+    { name: "Sandra McIntyre",        grade: "Freshman", otDay: 0,    otMTD: 0,    dayPts: 8,  mtdPts: 8 },
+    { name: "Rebekah Ash",            grade: "Freshman", otDay: 2,    otMTD: 2,    dayPts: 8,  mtdPts: 8 },
+    { name: "Rebecca Kennard",        grade: "Freshman", otDay: 0.5,  otMTD: 0.5,  dayPts: 8,  mtdPts: 8 },
+    { name: "Charlotte Shea",         grade: "Freshman", otDay: 0,    otMTD: 0,    dayPts: 8,  mtdPts: 8 },
+    { name: "Tina Chazin",            grade: "Freshman", otDay: 0,    otMTD: 0,    dayPts: 8,  mtdPts: 8 },
+    { name: "Michelle Park",          grade: "Freshman", otDay: 0,    otMTD: 0,    dayPts: 8,  mtdPts: 8 },
+    { name: "Robert Ross",            grade: "Freshman", otDay: 0,    otMTD: 0,    dayPts: 8,  mtdPts: 8 },
+    { name: "Jabari Weems",           grade: "Freshman", otDay: 0,    otMTD: 0,    dayPts: 8,  mtdPts: 8 },
+    { name: "Jenna Salupo",           grade: "Freshman", otDay: 0,    otMTD: 0,    dayPts: 8,  mtdPts: 8 },
+    { name: "Marcelle Aquino-Bodden", grade: "Freshman", otDay: 0,    otMTD: 0,    dayPts: 4,  mtdPts: 4 },
+    { name: "Walter Adams",           grade: "Freshman", otDay: 2.47, otMTD: 2.47, dayPts: 0,  mtdPts: 0 },
+    { name: "Christopher Cole",       grade: "Freshman", otDay: 0.95, otMTD: 0.95, dayPts: 0,  mtdPts: 0 },
+    { name: "Kallie Palmer",          grade: "Freshman", otDay: 0.95, otMTD: 0.95, dayPts: 0,  mtdPts: 0 },
+    { name: "Becky Ruffer",           grade: "Freshman", otDay: 0.92, otMTD: 0.92, dayPts: 0,  mtdPts: 0 },
+    { name: "Jayden Shell",           grade: "Freshman", otDay: 0.9,  otMTD: 0.9,  dayPts: 0,  mtdPts: 0 },
+    { name: "Braswell Chappelle",     grade: "Freshman", otDay: 0.5,  otMTD: 0.5,  dayPts: 0,  mtdPts: 0 },
+    { name: "Kodi Haynes",            grade: "Freshman", otDay: 0.5,  otMTD: 0.5,  dayPts: 0,  mtdPts: 0 },
+    { name: "Ryan Cuellar",           grade: "Freshman", otDay: 0.5,  otMTD: 0.5,  dayPts: 0,  mtdPts: 0 },
+    { name: "Sarah Pegg",             grade: "Freshman", otDay: 0.48, otMTD: 0.48, dayPts: 0,  mtdPts: 0 },
+    { name: "Brittany Powell",        grade: "Freshman", otDay: 0.47, otMTD: 0.47, dayPts: 0,  mtdPts: 0 },
+  ],
+
+  // ---- WEEKLY END-OF-WEEK REPORT CARD --------------------------------------
+  reportCard: {
+    weekOf: "Week 1 · Sept 1 – 5",
+    term: "First Week of September",
+    // Each subject = a contest category with the week's winner + a letter grade
+    rows: [
+      { subject: "Sales Points",  grade: "—", winner: "TBD", detail: "Most sales points this week — choice of prizes or $200 in paycheck" },
+      { subject: "OT MVP Raffle", grade: "—", winner: "TBD", detail: "Raffle winner — Free PTO Day (off season)" },
+      { subject: "Most Improved", grade: "—", winner: "TBD", detail: "Biggest climb on the board" },
+    ],
+    // Grade moves that happened this Friday
+    promotions: [],
+    comments: "Week 1 is live — let's set the pace! First Report Card goes out Friday.",
+    principal: "Coach J.",
+  },
+
+  // ---- SEPTEMBER SCHEDULE (whole month at a glance, from your grid) --------
+  // OT MVP Raffle: Free PTO on weeks 1,3,5  ·  $200 on weeks 2,4
+  // Friday Report Card: $200 every week (choice of Massage Chair / TV / Espresso Machine / Computer Monitor)
+  september: {
+    weeks: [
+      { wk: "Week 1", dates: "Sept 1 – 5", raffle: "Free PTO Day (off season)", friday: "prizes or $200 paycheck", current: true },
+    ],
+    finale: [
+      { title: "Valedictorian", sub: "Top sales for September", prize: "$500" },
+      { title: "Salutatorian",  sub: "2nd top sales",           prize: "$400" },
+      { title: "Honor Roll",    sub: "Most OT hours",           prize: "$300" },
+    ],
+  },
+};
+/* ======================== END EDITABLE BLOCK ============================= */
+</script>
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Nunito:wght@400;600;700;800;900&display=swap');
+
+:root{
+  --board:#213629; --board-2:#182720; --board-edge:#0f1a15;
+  --chalk:#f3efe4; --chalk-dim:rgba(243,239,228,.66); --chalk-faint:rgba(243,239,228,.30);
+  --yellow:#f2cf6a; --coral:#e8886e; --blue:#8fb9cf; --mint:#a3c9a0; --gold:#e9c15b;
+  --wood:#7a4f2d; --wood-hi:#9a6a40; --wood-lo:#4e3016;
+  --paper:#f6f1e1; --ink:#3a3228; --ink-red:#b64a3a;
+  --sans:'Nunito',system-ui,sans-serif; --script:'Caveat',cursive; --marker:'Nunito',system-ui,sans-serif; --type:'Nunito',system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+.tab,.special .name,.rank,.val,.grade,.schip .p,.swk,.ftitle,.fprize{font-weight:800}
+html,body{margin:0}
+body{
+  font-family:var(--sans);
+  background:#2b2119;
+  background-image:
+    repeating-linear-gradient(90deg,#3a2c20 0 3px,#2f231a 3px 7px,#3a2c20 7px 9px),
+    linear-gradient(#2b2119,#241b14);
+  color:var(--chalk);
+  min-height:100vh;
+  padding:clamp(14px,3vw,40px);
+  display:flex;justify-content:center;
+  -webkit-font-smoothing:antialiased;
+}
+
+/* ---------- wooden frame ---------- */
+.frame{
+  width:min(1120px,100%);
+  border-radius:14px;
+  padding:clamp(10px,1.6vw,20px);
+  background:
+    linear-gradient(135deg,var(--wood-hi),var(--wood) 30%,var(--wood-lo) 100%);
+  box-shadow:0 24px 60px rgba(0,0,0,.55), inset 0 2px 3px rgba(255,255,255,.22), inset 0 -3px 6px rgba(0,0,0,.4);
+  position:relative;
+}
+.frame::before{ /* wood grain */
+  content:"";position:absolute;inset:6px;border-radius:9px;pointer-events:none;
+  background:repeating-linear-gradient(92deg,rgba(0,0,0,.10) 0 2px,transparent 2px 26px);
+  opacity:.5;
+}
+
+/* ---------- the board ---------- */
+.board{
+  position:relative;border-radius:8px;overflow:hidden;
+  background:radial-gradient(120% 100% at 50% 0%,var(--board) 0%,var(--board-2) 78%,var(--board-edge) 100%);
+  box-shadow:inset 0 0 90px rgba(0,0,0,.55), inset 0 0 0 2px rgba(0,0,0,.5);
+  padding:clamp(20px,3.2vw,42px) clamp(18px,3.4vw,44px) clamp(30px,4vw,48px);
+}
+.board::after{ /* chalk dust texture */
+  content:"";position:absolute;inset:0;pointer-events:none;opacity:.05;mix-blend-mode:screen;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+}
+.board>*{position:relative;z-index:1}
+
+/* faint chalk doodles in the margins */
+.doodle{position:absolute;stroke:var(--chalk);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;opacity:.16;pointer-events:none;z-index:0}
+.d-abc{top:14px;right:22px;font-family:var(--marker);font-size:26px;fill:var(--chalk);stroke:none;opacity:.15}
+
+/* ---------- header ---------- */
+.top{display:flex;flex-wrap:wrap;align-items:flex-end;gap:10px 22px;justify-content:space-between;
+  border-bottom:2px dashed var(--chalk-faint);padding-bottom:16px;margin-bottom:20px}
+.title{font-family:var(--script);font-weight:700;line-height:.92;font-size:clamp(34px,6vw,62px);
+  text-shadow:0 0 1px rgba(255,255,255,.35)}
+.title .apple{font-size:.8em}
+.subtitle{font-family:var(--sans);font-size:clamp(13px,1.6vw,17px);color:var(--chalk-dim);margin-top:2px}
+.subtitle b{color:var(--yellow);font-weight:700}
+
+.tabs{display:flex;gap:8px}
+.tab{font-family:var(--marker);font-size:clamp(12px,1.5vw,15px);letter-spacing:.5px;
+  background:transparent;color:var(--chalk-dim);border:2px solid var(--chalk-faint);
+  border-radius:30px;padding:8px 16px;cursor:pointer;transition:.15s}
+.tab:hover{color:var(--chalk);border-color:var(--chalk-dim)}
+.tab[aria-selected="true"]{color:var(--board);background:var(--chalk);border-color:var(--chalk)}
+
+/* ---------- today's special banner ---------- */
+.special{display:flex;align-items:center;gap:14px;margin-bottom:24px;padding:12px 18px;border-radius:10px;
+  border:2px solid var(--yellow);background:rgba(242,207,106,.08)}
+.special .star{flex:none}
+.special.k-ot2x{border-color:var(--coral);background:rgba(232,136,110,.08)}
+.special.k-ot2x .star path{stroke:var(--coral)}
+.special.k-nspd{border-color:var(--blue);background:rgba(143,185,207,.08)}
+.special.k-nspd .star path{stroke:var(--blue)}
+.special .lbl{font-family:var(--sans);font-size:12px;letter-spacing:2px;text-transform:uppercase;color:var(--chalk-dim)}
+.special .name{font-family:var(--marker);font-size:clamp(20px,3.4vw,30px);line-height:1;color:var(--yellow)}
+.special.k-ot2x .name{color:var(--coral)} .special.k-nspd .name{color:var(--blue)}
+.special .note{font-family:var(--sans);font-weight:700;font-size:clamp(15px,2vw,19px);color:var(--chalk)}
+
+/* ---------- leaderboard columns ---------- */
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:clamp(16px,3vw,38px)}
+.col-head{display:flex;align-items:baseline;gap:10px;margin-bottom:12px}
+.col-head h2{font-family:var(--sans);font-weight:800;font-size:clamp(24px,3.2vw,34px);margin:0;
+  text-shadow:0 0 1px rgba(255,255,255,.3)}
+.col-head .unit{font-family:var(--sans);color:var(--chalk-dim);font-size:14px}
+.col-sales .col-head h2{color:var(--yellow)}
+.col-ot .col-head h2{color:var(--coral)}
+.rule{height:3px;border-radius:3px;margin-bottom:6px;
+  background:linear-gradient(90deg,var(--chalk) 0%,transparent 100%);opacity:.4}
+.col-ot .rule{background:linear-gradient(90deg,var(--coral) 0%,transparent 100%);opacity:.5}
+.col-sales .rule{background:linear-gradient(90deg,var(--yellow) 0%,transparent 100%);opacity:.5}
+
+.row{display:grid;grid-template-columns:34px 1fr auto;align-items:center;gap:12px;
+  padding:10px 4px;border-bottom:1px solid rgba(243,239,228,.10)}
+.rank{font-family:var(--marker);font-size:20px;color:var(--chalk-dim);text-align:center}
+.row.top .rank{color:var(--yellow)}
+.col-ot .row.top .rank{color:var(--coral)}
+.who{display:flex;align-items:center;gap:10px;min-width:0}
+.name{font-size:clamp(16px,2vw,20px);font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.val{font-family:var(--marker);font-size:clamp(18px,2.4vw,26px)}
+.col-sales .val{color:var(--yellow)} .col-ot .val{color:var(--coral)}
+.boardfull{margin-top:24px}
+.val small{font-family:var(--sans);font-size:12px;color:var(--chalk-dim);margin-left:3px}
+.apple-1{width:22px;height:22px;flex:none}
+
+/* grade badge */
+.grade{font-family:var(--marker);font-size:10px;letter-spacing:.5px;padding:3px 9px;border-radius:20px;
+  border:1.5px solid currentColor;white-space:nowrap;line-height:1}
+.g-Freshman{color:var(--mint)} .g-Sophomore{color:var(--blue)}
+.g-Junior{color:var(--coral)} .g-Senior{color:var(--gold)}
+
+/* ---------- bottom strip: race + honor roll + legend ---------- */
+.strip{display:grid;grid-template-columns:1.1fr 1.1fr 1fr;gap:clamp(14px,2.4vw,26px);
+  margin-top:26px;padding-top:20px;border-top:2px dashed var(--chalk-faint)}
+.panel h3{font-family:var(--sans);font-weight:800;font-size:18px;margin:0 0 8px}
+.panel .cap{font-family:var(--sans);font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--chalk-dim);margin-bottom:6px}
+.mini{display:flex;justify-content:space-between;gap:8px;font-size:15px;padding:4px 0}
+.mini b{font-family:var(--marker);font-weight:800}
+.race h3{color:var(--gold)} .honor h3{color:var(--coral)}
+.legend .key{display:flex;align-items:center;gap:8px;font-size:13px;margin:5px 0;color:var(--chalk-dim)}
+.legend .dot{width:12px;height:12px;border-radius:50%;border:2px solid currentColor}
+.legend .prize{margin-top:10px;font-size:12px;color:var(--chalk-dim);line-height:1.5}
+.legend .prize b{color:var(--yellow)}
+
+/* ---------- chalk tray ---------- */
+.tray{height:16px;margin:4px clamp(10px,2vw,26px) 0;border-radius:0 0 7px 7px;
+  background:linear-gradient(var(--wood) ,var(--wood-lo));
+  box-shadow:0 6px 10px rgba(0,0,0,.4), inset 0 2px 2px rgba(255,255,255,.15);
+  position:relative}
+.tray i{position:absolute;top:5px;height:7px;border-radius:4px;display:block}
+.chk1{left:8%;width:52px;background:#eee} .chk2{left:20%;width:38px;background:var(--coral)}
+.chk3{left:30%;width:44px;background:var(--yellow)} .eraser{right:9%;width:46px;height:11px;top:2px;border-radius:3px;
+  background:linear-gradient(#3f4c8a,#2c366b);box-shadow:inset 0 3px 0 #cbb28a}
+
+/* ======================= REPORT CARD (weekly) ======================= */
+.report{display:flex;justify-content:center}
+.card{background:var(--paper);color:var(--ink);width:min(680px,100%);border-radius:6px;
+  padding:clamp(22px,3.4vw,40px);box-shadow:0 18px 40px rgba(0,0,0,.5);
+  font-family:var(--sans);position:relative;
+  background-image:linear-gradient(var(--paper),var(--paper)),repeating-linear-gradient(transparent 0 30px,rgba(58,50,40,.05) 30px 31px)}
+.card::before{content:"";position:absolute;inset:10px;border:2px solid var(--ink);border-radius:3px;opacity:.55;pointer-events:none}
+.card-inner{position:relative}
+.rc-top{text-align:center;border-bottom:3px double var(--ink);padding-bottom:14px;margin-bottom:4px}
+.rc-school{font-size:12px;letter-spacing:3px;text-transform:uppercase}
+.rc-h1{font-family:var(--script);font-weight:700;font-size:clamp(32px,5vw,46px);line-height:1;margin:4px 0}
+.rc-meta{display:flex;justify-content:space-between;font-size:12px;margin-top:8px}
+.rc-star{position:absolute;top:-14px;right:-6px;width:66px;height:66px;transform:rotate(12deg)}
+
+table.rc{width:100%;border-collapse:collapse;margin:16px 0 6px;font-size:14px}
+table.rc th{text-align:left;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;
+  border-bottom:2px solid var(--ink);padding:6px 4px}
+table.rc th.c,table.rc td.c{text-align:center}
+table.rc td{padding:9px 4px;border-bottom:1px dotted rgba(58,50,40,.4);vertical-align:top}
+.subj{font-size:15px}
+.winner{font-family:var(--sans);font-weight:700;font-size:15px}
+.detail{font-family:var(--sans);font-size:12px;color:#6b6152}
+.lg{font-family:var(--script);font-weight:700;font-size:30px;line-height:.8;color:var(--ink-red)}
+
+.rc-cols{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:14px}
+.rc-box h4{font-size:11px;letter-spacing:2px;text-transform:uppercase;margin:0 0 8px;border-bottom:1px solid var(--ink);padding-bottom:4px}
+.promo{font-family:var(--sans);font-size:14px;margin:6px 0;display:flex;align-items:center;gap:6px}
+.promo .arw{color:var(--ink-red)} .promo .to{color:#2f6b3a;font-weight:700}
+.comment{font-family:var(--sans);font-size:14px;line-height:1.55;color:#4a4234}
+.rc-sign{display:flex;justify-content:space-between;align-items:flex-end;margin-top:22px;padding-top:8px}
+.sig{font-family:var(--script);font-weight:700;font-size:30px;border-bottom:1px solid var(--ink);padding:0 24px 2px;line-height:.9}
+.sig-lbl{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#6b6152;text-align:center;margin-top:3px}
+
+/* ======================= SCORING KEY ======================= */
+.scorebar{margin-top:24px;padding-top:18px;border-top:2px dashed var(--chalk-faint)}
+.scorebar .cap{font-family:var(--sans);font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--chalk-dim);margin-bottom:12px}
+.sched-score{margin-top:0;padding-top:0;border-top:none;margin-bottom:20px}
+.scorekey{display:flex;flex-wrap:wrap;gap:10px}
+.schip{flex:1 1 auto;min-width:150px;display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding:10px 14px;border:1.5px solid var(--chalk-faint);border-radius:11px;background:rgba(243,239,228,.03)}
+.schip .lab{font-size:15px;line-height:1.15}
+.schip .lab small{display:block;font-family:var(--sans);font-size:10px;letter-spacing:1.5px;text-transform:uppercase;margin-top:2px}
+.schip .p{font-family:var(--marker);font-size:26px;line-height:1;white-space:nowrap}
+.schip .p i{font-family:var(--sans);font-style:normal;font-size:11px;margin-left:3px;color:var(--chalk-dim)}
+.schip.mem{border-color:rgba(163,201,160,.5)}
+.schip.mem .lab small{color:var(--mint)} .schip.mem .p{color:var(--mint)}
+.schip.cert{border-color:rgba(232,136,110,.5)}
+.schip.cert .lab small{color:var(--coral)} .schip.cert .p{color:var(--coral)}
+.schip.wb{border-color:rgba(143,185,207,.5)}
+.schip.gtp{border-color:rgba(233,193,91,.5)}
+.schip.gtp .lab small{color:var(--gold)} .schip.gtp .p{color:var(--gold)}
+.schip.wb .lab small{color:var(--blue)} .schip.wb .p{color:var(--blue)}
+.score-note{flex-basis:100%;font-family:var(--sans);font-size:12.5px;color:var(--chalk-dim);line-height:1.5;margin-top:2px}
+@media (max-width:720px){ .schip{flex-basis:100%} }
+
+/* ======================= SEPTEMBER SCHEDULE ======================= */
+.sched-head{margin-bottom:16px}
+.sched-head h2{font-family:var(--script);font-weight:700;font-size:clamp(28px,4.4vw,46px);margin:0;color:var(--yellow);text-shadow:0 0 1px rgba(255,255,255,.3)}
+.sched-head p{font-family:var(--sans);color:var(--chalk-dim);margin:4px 0 0;font-size:15px}
+.sched{display:flex;flex-direction:column;gap:2px}
+.srow{display:grid;grid-template-columns:1.2fr .9fr 1.2fr 1.1fr;gap:14px;align-items:center;
+  padding:14px 12px;border-bottom:1px solid rgba(243,239,228,.12)}
+.srow.now{border:2px solid var(--yellow);border-radius:12px;background:rgba(242,207,106,.07)}
+.swk{font-family:var(--marker);font-size:clamp(15px,2.1vw,21px)}
+.swk em{display:block;font-family:var(--sans);font-style:normal;font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--yellow)}
+.sdt{font-family:var(--sans);font-weight:700;font-size:clamp(16px,2vw,20px);color:var(--chalk-dim)}
+.sr,.sf{font-size:16px}
+.sr .k,.sf .k{display:block;font-family:var(--sans);font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--chalk-dim)}
+.sf{color:var(--yellow)}
+.rotate{margin-top:22px;padding:14px 18px;border:2px dashed var(--chalk-faint);border-radius:12px;
+  display:flex;flex-wrap:wrap;gap:8px 26px;align-items:center}
+.rotate .cap{width:100%;font-family:var(--sans);font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--chalk-dim);margin-bottom:2px}
+.rotate span{font-family:var(--sans);font-weight:700;font-size:clamp(14px,1.7vw,17px)}
+.finale{margin-top:24px;display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.fin-cap{grid-column:1/-1;font-family:var(--sans);font-weight:800;font-size:20px;color:var(--gold);text-align:center;margin-bottom:2px}
+.fchip{border:2px solid var(--gold);border-radius:14px;padding:16px 12px;text-align:center;background:rgba(233,193,91,.06)}
+.ftitle{font-family:var(--marker);font-size:clamp(15px,2vw,19px);color:var(--gold)}
+.fsub{font-family:var(--sans);font-size:12px;color:var(--chalk-dim);margin:3px 0 10px}
+.fprize{font-family:var(--marker);font-size:clamp(24px,3.2vw,32px);color:var(--chalk)}
+@media (max-width:720px){ .srow{grid-template-columns:1fr 1fr} .finale{grid-template-columns:1fr} }
+
+.hidden{display:none}
+.foot{font-family:var(--sans);text-align:center;color:var(--chalk-faint);font-size:12px;margin-top:14px}
+
+@media (max-width:720px){
+  .cols{grid-template-columns:1fr}
+  .strip{grid-template-columns:1fr}
+  .grade{display:none}
+  .tabs{width:100%;justify-content:center}
+}
+@media (prefers-reduced-motion:no-preference){
+  .board>.top,.special,.cols,.strip{animation:chalkin .5s ease both}
+  .special .star{animation:tw 2.6s ease-in-out infinite}
+  .row.top .apple-1{animation:wob 3s ease-in-out infinite;transform-origin:50% 90%}
+  @keyframes chalkin{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+  @keyframes tw{0%,100%{opacity:1}50%{opacity:.55}}
+  @keyframes wob{0%,100%{transform:rotate(-4deg)}50%{transform:rotate(4deg)}}
+}
+@media print{
+  body{background:#fff;padding:0} .frame,.board{box-shadow:none;background:#fff}
+  .tabs,.foot,.tray{display:none} .board{padding:0}
+}
+</style>
+
+<body>
+<div class="frame">
+  <div class="board">
+    <!-- margin doodles -->
+    <svg class="doodle d-pencil" width="120" height="30" viewBox="0 0 120 30" style="bottom:70px;left:-6px">
+      <path d="M6 15 L96 15 M96 8 L112 15 L96 22 Z M6 8 L6 22"/></svg>
+    <svg class="doodle" width="46" height="46" viewBox="0 0 46 46" style="bottom:120px;right:14px">
+      <path d="M23 4 L28 18 L43 18 L31 27 L36 42 L23 33 L10 42 L15 27 L3 18 L18 18 Z"/></svg>
+    <div class="d-abc doodle">ABC · 123</div>
+
+    <!-- ===== HEADER ===== -->
+    <header class="top">
+      <div>
+        <div class="title"><span class="apple">🍎</span> Back&nbsp;to&nbsp;School <br>Sales Challenge</div>
+        <div class="subtitle" id="sub"></div>
+      </div>
+      <div class="tabs" role="tablist">
+        <button class="tab" role="tab" aria-selected="true"  data-view="daily">DAILY BOARD</button>
+        <button class="tab" role="tab" aria-selected="false" data-view="ot">OT BOARD</button>
+        <button class="tab" role="tab" aria-selected="false" data-view="weekly">REPORT CARD</button>
+        <button class="tab" role="tab" aria-selected="false" data-view="schedule">IMPORTANT INFO</button>
+      </div>
+    </header>
+
+    <!-- ===== DAILY VIEW ===== -->
+    <section id="daily">
+      <div class="special" id="special">
+        <svg class="star" width="34" height="34" viewBox="0 0 24 24"><path d="M12 2 l3 6 6.5 .9 -4.7 4.6 1.1 6.5 -5.9 -3 -5.9 3 1.1 -6.5 -4.7 -4.6 6.5 -.9 z" fill="none" stroke="var(--yellow)" stroke-width="1.6" stroke-linejoin="round"/></svg>
+        <div>
+          <div class="lbl">Today&rsquo;s Daily Engagement</div>
+          <span class="name" id="sp-name"></span>
+          <span class="note" id="sp-note"></span>
+        </div>
+      </div>
+
+      <div class="scorebar">
+        <div class="cap">Scoring &mdash; everything sold rolls up to one points total</div>
+        <div class="scorekey"></div>
+      </div>
+
+      <div class="strip">
+        <div class="panel race">
+          <div class="cap">Month to date</div>
+          <h3>🏆 Race for Valedictorian</h3>
+          <div id="race"></div>
+        </div>
+        <div class="panel honor">
+          <div class="cap">Month to date</div>
+          <h3>⏱ Honor Roll · Most OT</h3>
+          <div id="honor"></div>
+        </div>
+        <div class="panel legend">
+          <div class="cap">Grade ladder</div>
+          <div class="key g-Freshman"><span class="dot"></span> Freshman</div>
+          <div class="key g-Sophomore"><span class="dot"></span> Sophomore</div>
+          <div class="key g-Junior"><span class="dot"></span> Junior</div>
+          <div class="key g-Senior"><span class="dot"></span> Senior</div>
+          <div class="prize" id="prizeNote"></div>
+        </div>
+      </div>
+
+      <div class="col-sales boardfull">
+        <div class="col-head"><h2>Sales</h2><span class="unit">points today</span></div>
+        <div class="rule"></div>
+        <div id="salesList"></div>
+      </div>
+    </section>
+
+    <!-- ===== OT BOARD VIEW ===== -->
+    <section id="ot" class="hidden">
+      <div class="col-ot boardfull">
+        <div class="col-head"><h2>Overtime</h2><span class="unit">OT hours today</span></div>
+        <div class="rule"></div>
+        <div id="otList"></div>
+      </div>
+    </section>
+
+    <!-- ===== WEEKLY VIEW ===== -->
+    <section id="weekly" class="report hidden">
+      <div class="card"><div class="card-inner">
+        <svg class="rc-star" viewBox="0 0 24 24"><path d="M12 2 l3 6 6.5 .9 -4.7 4.6 1.1 6.5 -5.9 -3 -5.9 3 1.1 -6.5 -4.7 -4.6 6.5 -.9 z" fill="var(--gold)" stroke="var(--ink)" stroke-width="1" stroke-linejoin="round"/></svg>
+        <div class="rc-top">
+          <div class="rc-school">Varsity Sales Academy</div>
+          <div class="rc-h1">Weekly Report Card</div>
+          <div class="rc-meta"><span id="rc-week"></span><span id="rc-term"></span></div>
+        </div>
+        <table class="rc">
+          <thead><tr><th>Subject</th><th class="c">Grade</th><th>This Week&rsquo;s Honoree</th></tr></thead>
+          <tbody id="rc-rows"></tbody>
+        </table>
+        <div class="rc-cols">
+          <div class="rc-box">
+            <h4>Promotions</h4>
+            <div id="rc-promos"></div>
+          </div>
+          <div class="rc-box">
+            <h4>Teacher&rsquo;s Comments</h4>
+            <div class="comment" id="rc-comment"></div>
+          </div>
+        </div>
+        <div class="rc-sign">
+          <div class="detail">Grades: A+ outstanding · A great · B solid · S = staff pick</div>
+          <div><div class="sig" id="rc-sign"></div><div class="sig-lbl">Principal / Coach</div></div>
+        </div>
+      </div></div>
+    </section>
+
+    <!-- ===== SEPTEMBER SCHEDULE VIEW ===== -->
+    <section id="schedule" class="hidden">
+      <div class="sched-head">
+        <h2>Important Info for the Week</h2>
+        <p>Freshman on the 1st &rarr; Seniors by Oct 31st.</p>
+      </div>
+      <div class="scorebar sched-score">
+        <div class="cap">How points work &mdash; memberships score by package hours, Prof Certs by program size</div>
+        <div class="scorekey"></div>
+      </div>
+
+      <div class="sched" id="schedRows"></div>
+
+      <div class="rotate">
+        <div class="cap">Daily Engagement</div>
+        <span>Prizes vary day by day &mdash; keep a look out!</span>
+      </div>
+
+      <div class="finale" id="finale"></div>
+    </section>
+
+    <div class="foot" id="foot"></div>
+  </div>
+  <div class="tray"><i class="chk1"></i><i class="chk2"></i><i class="chk3"></i><i class="eraser"></i></div>
+</div>
+
+<script>
+(function(){
+  const C = CONTEST;
+  const $ = s => document.querySelector(s);
+  const esc = s => String(s).replace(/[&<>]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[m]));
+  const gradeBadge = g => `<span class="grade g-${esc(g)}">${esc(g)}</span>`;
+
+  // ---- points: everything sold rolls up to one number ----
+  const POINTS = Object.fromEntries(C.scoring.map(s=>[s.key,s.pts]));
+  const pts = mix => C.scoring.reduce((sum,s)=>sum + ((mix&&mix[s.key])||0)*s.pts, 0);
+  C.reps.forEach(r=>{ r.salesDay = (r.dayPts!=null)?r.dayPts:pts(r.day); r.salesMTD = (r.mtdPts!=null)?r.mtdPts:pts(r.mtd); });
+
+  // Prof Cert band lookup — hours on a band edge round UP to the higher band.
+  const certTiers = C.scoring.filter(s=>s.min!=null).sort((a,b)=>b.min-a.min);
+  const certTierForHours = h => certTiers.find(t=>h>=t.min) || null;
+  const eg = h => { const t=certTierForHours(h); return t ? `${h} hrs → ${t.pts} pts` : `${h} hrs → no points`; };
+  const roundNote = `Memberships score 1 point per package hour. Prof Cert hours on a band edge round up — ${eg(24)}, ${eg(36)}.`;
+
+  // scoring key (rendered on both the daily board and the schedule tab)
+  function renderScoring(el){
+    el.innerHTML = C.scoring.map(s=>`
+      <div class="schip ${s.note.indexOf('Prof Cert')===0?'cert':(s.note.indexOf('Winback')===0?'wb':(s.note.indexOf('GTP')===0?'gtp':'mem'))}">
+        <span class="lab">${esc(s.label)}<small>${esc(s.note)}</small></span>
+        <span class="p">${s.pts}<i>pts</i></span>
+      </div>`).join('') + `<div class="score-note">${esc(roundNote)}</div>`;
+  }
+  document.querySelectorAll('.scorekey').forEach(renderScoring);
+
+  // header
+  $('#sub').innerHTML = `${esc(C.month)} &middot; <b>${esc(C.weekLabel)}</b> &middot; ${esc(C.dateLabel)}`;
+
+  // today's special
+  const sp = $('#special');
+  sp.classList.add('k-'+C.todaySpecial.kind);
+  $('#sp-name').textContent = C.todaySpecial.title;
+  $('#sp-note').textContent = C.todaySpecial.note;
+
+  // ranked list renderer
+  function renderList(el, key, unit, appleTop){
+    const sorted = [...C.reps].filter(r=>r[key]>0).sort((a,b)=>b[key]-a[key]);
+    el.innerHTML = sorted.map((r,i)=>{
+      const top = i===0;
+      const apple = (top&&appleTop)
+        ? `<svg class="apple-1" viewBox="0 0 24 24" fill="none" stroke="var(--yellow)" stroke-width="1.8"><path d="M12 7c-1-3-5-3-6-1-1.5 3 1 9 3 10 1 .5 2 .5 3 0 2-1 4.5-7 3-10-1-2-5-2-6 1z"/><path d="M12 7c0-2 1-3 3-3.5" stroke="var(--mint)"/></svg>`
+        : '';
+      const num = Number.isInteger(r[key])?r[key]:r[key].toFixed(1);
+      return `<div class="row ${top?'top':''}">
+        <span class="rank">${i+1}</span>
+        <span class="who">${apple}<span class="name">${esc(r.name)}</span>${gradeBadge(r.grade)}</span>
+        <span class="val">${num}<small>${unit}</small></span>
+      </div>`;
+    }).join('');
+  }
+  renderList($('#salesList'),'salesDay','pts',true);
+  renderList($('#otList'),'otDay','hrs',false);
+
+  // month-to-date mini panels
+  const mini = (arr,key,unit)=>arr.map((r,i)=>{
+    const num = Number.isInteger(r[key])?r[key]:r[key].toFixed(1);
+    return `<div class="mini"><span>${i+1}. ${esc(r.name)} ${gradeBadge(r.grade)}</span><b>${num}${unit}</b></div>`;
+  }).join('');
+  $('#race').innerHTML  = mini([...C.reps].sort((a,b)=>b.salesMTD-a.salesMTD).slice(0,3),'salesMTD',' pts');
+  $('#honor').innerHTML = mini([...C.reps].sort((a,b)=>b.otMTD-a.otMTD).slice(0,3),'otMTD',' hrs');
+
+  $('#prizeNote').innerHTML = `<b>Friday Report Card:</b> ${esc(C.fridayPrize)}<br><b>OT MVP Raffle:</b> ${esc(C.rafflePrize)}`;
+
+  // ---- report card ----
+  const rc = C.reportCard;
+  $('#rc-week').textContent = rc.weekOf;
+  $('#rc-term').textContent = rc.term;
+  $('#rc-rows').innerHTML = rc.rows.map(r=>`
+    <tr><td class="subj">${esc(r.subject)}</td>
+    <td class="c"><span class="lg">${esc(r.grade)}</span></td>
+    <td><div class="winner">${esc(r.winner)}</div><div class="detail">${esc(r.detail)}</div></td></tr>`).join('');
+  $('#rc-promos').innerHTML = rc.promotions.length
+    ? rc.promotions.map(p=>`<div class="promo">${esc(p.name)} <span class="arw">→</span> <span class="to">${esc(p.to)}</span></div>`).join('')
+    : `<div class="detail">No moves this week.</div>`;
+  $('#rc-comment').textContent = rc.comments;
+  $('#rc-sign').textContent = rc.principal;
+
+  // ---- september schedule ----
+  $('#schedRows').innerHTML = C.september.weeks.map(w=>`
+    <div class="srow ${w.current?'now':''}">
+      <div class="swk">${esc(w.wk)}${w.current?'<em>&larr; this week</em>':''}</div>
+      <div class="sdt">${esc(w.dates)}</div>
+      <div class="sr"><span class="k">OT MVP Raffle</span>${esc(w.raffle)}</div>
+      <div class="sf"><span class="k">Friday Report Card</span>${esc(w.friday)}</div>
+    </div>`).join('');
+  $('#finale').innerHTML = `<div class="fin-cap">&#127891; End of September Midterms</div>` +
+    C.september.finale.map(f=>`<div class="fchip">
+      <div class="ftitle">${esc(f.title)}</div>
+      <div class="fsub">${esc(f.sub)}</div>
+      <div class="fprize">${esc(f.prize)}</div></div>`).join('');
+
+  $('#foot').textContent = `Last updated ${C.lastUpdated}`;
+
+  // ---- tab switching ----
+  const views = { daily:'#daily', ot:'#ot', weekly:'#weekly', schedule:'#schedule' };
+  document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>{
+    document.querySelectorAll('.tab').forEach(x=>x.setAttribute('aria-selected', x===t));
+    Object.entries(views).forEach(([v,sel])=>$(sel).classList.toggle('hidden', v!==t.dataset.view));
+  }));
+})();
+</script>
+</body>
